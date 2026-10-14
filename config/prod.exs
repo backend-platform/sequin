@@ -8,8 +8,11 @@ import Config
 
 self_hosted = System.get_env("SELF_HOSTED", "0") in ~w(1 true)
 
+# The Dockerfile sets SENTRY_DSN to "" when no DSN is passed; treat that as unset
+sentry_dsn = System.get_env("SENTRY_DSN")
+
 config :sentry,
-  dsn: System.get_env("SENTRY_DSN"),
+  dsn: if(sentry_dsn not in [nil, ""], do: sentry_dsn),
   release: System.get_env("RELEASE_VERSION")
 
 config :sequin, Sequin.ConsoleLogger, drop_metadata_keys: [:mfa]
