@@ -28,6 +28,11 @@ ENV SELF_HOSTED=${SELF_HOSTED}
 ARG SENTRY_DSN
 ENV SENTRY_DSN=${SENTRY_DSN}
 
+# Extra emulator flags for the build stage only. Set to "+JMsingle true" when
+# cross-building under QEMU (e.g. linux/amd64 on Apple Silicon), where the JIT crashes.
+ARG ERL_AFLAGS=""
+ENV ERL_AFLAGS=${ERL_AFLAGS}
+
 # install build dependencies
 RUN apt-get update -y && apt-get install -y build-essential git curl cmake \
     && apt-get clean && rm -f /var/lib/apt/lists/*_*
