@@ -123,14 +123,7 @@ defmodule SequinWeb.Components.Sidenav do
 
   defp maybe_assign_release_version(socket) do
     if Application.get_env(:sequin, :self_hosted) do
-      socket
-      |> assign(release_version: Application.get_env(:sequin, :release_version))
-      |> assign_async(:latest_version, fn ->
-        case Req.get("https://sequinstream.com/gh/releases/latest/sequinstream/sequin") do
-          {:ok, %{body: %{"tag_name" => tag_name}}} -> {:ok, %{latest_version: tag_name}}
-          _ -> {:ok, %{latest_version: nil}}
-        end
-      end)
+      assign(socket, release_version: Application.get_env(:sequin, :release_version))
     else
       socket
     end

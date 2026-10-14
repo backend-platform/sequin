@@ -163,12 +163,6 @@ if config_env() == :prod and self_hosted do
     :ok
   end
 
-  config :sequin, Sequin.Posthog,
-    req_opts: [base_url: "https://us.i.posthog.com"],
-    api_key: "phc_i9k28nZwjjJG9DzUK0gDGASxXtGNusdI1zdaz9cuA7h",
-    frontend_api_key: "phc_i9k28nZwjjJG9DzUK0gDGASxXtGNusdI1zdaz9cuA7h",
-    is_disabled: System.get_env("SEQUIN_TELEMETRY_DISABLED") in ~w(true 1)
-
   config :sequin, Sequin.Repo,
     ssl: repo_ssl,
     pool_size: String.to_integer(System.get_env("PG_POOL_SIZE", "10")),
@@ -206,10 +200,6 @@ if config_env() == :prod and self_hosted do
     provision_default_user: provision_default_user,
     function_transforms: :enabled
 
-  config :sequin, :koala,
-    public_key: "pk_ec2e6140b3d56f5eb1735350eb20e92b8002",
-    is_disabled: System.get_env("SEQUIN_TELEMETRY_DISABLED") in ~w(true 1)
-
   config :sequin,
     api_base_url: "http://#{ConfigParser.server_host(env_vars)}:#{ConfigParser.server_port(env_vars)}",
     release_version: System.get_env("RELEASE_VERSION"),
@@ -230,11 +220,6 @@ if config_env() == :prod and not self_hosted do
     ]
 
   config :sequin, Sequin.Pagerduty, integration_key: System.fetch_env!("PAGERDUTY_INTEGRATION_KEY")
-
-  config :sequin, Sequin.Posthog,
-    req_opts: [base_url: "https://us.i.posthog.com"],
-    api_key: "phc_TZn6p4BG38FxUXrH8IvmG39TEHvqdO2kXGoqrSwN8IY",
-    frontend_api_key: "phc_TZn6p4BG38FxUXrH8IvmG39TEHvqdO2kXGoqrSwN8IY"
 
   config :sequin, Sequin.Repo,
     ssl: AwsRdsCAStore.ssl_opts(database_url),
@@ -267,8 +252,6 @@ if config_env() == :prod and not self_hosted do
   config :sequin, :features,
     account_self_signup: :disabled,
     function_transforms: function_transforms
-
-  config :sequin, :koala, public_key: "pk_ec2e6140b3d56f5eb1735350eb20e92b8002"
 
   config :sequin,
     api_base_url: "https://#{System.fetch_env!("API_HOST")}",

@@ -61,8 +61,7 @@ defmodule Sequin.Application do
             [
               Sequin.Runtime.Supervisor
             ]
-          ),
-          Sequin.Telemetry.PosthogReporter
+          )
         ]
 
     if HttpPushSqsPipeline.enabled?() do
