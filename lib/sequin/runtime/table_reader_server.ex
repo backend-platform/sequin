@@ -529,7 +529,7 @@ defmodule Sequin.Runtime.TableReaderServer do
             state = %{state | successive_failure_count: state.successive_failure_count + 1, last_id_fetch_time_ms: nil}
             {:keep_state, state, [maybe_fetch_timeout(1)]}
 
-          match?(%Sequin.Error.InvariantError{code: :no_primary_key_columns}, error) ->
+          match?(%Sequin.Error.InvariantError{code: code} when code in [:no_primary_key_columns, :invalid_cursor], error) ->
             Health.put_event(state.consumer, %Event{slug: :backfill_fetch_batch, status: :warning, error: error})
             {:ok, _} = Consumers.update_backfill(state.backfill, %{state: :failed, error: error})
             {:stop, :normal}

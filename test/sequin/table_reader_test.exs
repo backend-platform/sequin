@@ -3,6 +3,7 @@ defmodule Sequin.TableReaderTest do
 
   alias Sequin.Databases
   alias Sequin.Databases.ConnectionCache
+  alias Sequin.Error.InvariantError
   alias Sequin.Factory
   alias Sequin.Factory.CharacterFactory
   alias Sequin.Factory.ConsumersFactory
@@ -453,6 +454,13 @@ defmodule Sequin.TableReaderTest do
 
       assert primary_keys == []
       assert next_cursor == nil
+    end
+
+    test "returns an error when the cursor is missing cursor columns", %{
+      db: db,
+      characters_table: table
+    } do
+      assert {:error, %InvariantError{code: :invalid_cursor}} = TableReader.fetch_batch_pks(db, table, %{})
     end
   end
 

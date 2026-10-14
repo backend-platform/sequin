@@ -166,14 +166,15 @@ defmodule Sequin.Runtime.TableReader do
 
     # Add the option to select only primary key and cursor columns
     opts = Keyword.put(opts, :select_only_pk_and_cursor_columns, true)
-    {sql, params} = fetch_batch_query(table, min_cursor, opts)
 
     primary_key_columns =
       table.columns
       |> Enum.filter(& &1.is_pk?)
       |> Enum.sort_by(& &1.attnum)
 
-    with :ok <- validate_primary_key_columns(primary_key_columns) do
+    with :ok <- validate_primary_key_columns(primary_key_columns),
+         :ok <- validate_cursor(table, min_cursor) do
+      {sql, params} = fetch_batch_query(table, min_cursor, opts)
       {:ok, %Postgrex.Result{} = result} = Postgres.query(db_or_conn, sql, params, timeout: timeout)
 
       case result do
@@ -207,6 +208,28 @@ defmodule Sequin.Runtime.TableReader do
   end
 
   defp validate_primary_key_columns(_), do: :ok
+
+  # A backfill's cursor is keyed by the table's cursor columns at the time it was created. If the
+  # table's primary key changed since (e.g. it had none when the backfill was created), the cursor
+  # can never be used, so fail instead of retrying forever.
+  defp validate_cursor(table, cursor) do
+    missing_columns =
+      table
+      |> KeysetCursor.cursor_columns()
+      |> Enum.reject(&Map.has_key?(cursor, &1.attnum))
+
+    if missing_columns == [] do
+      :ok
+    else
+      {:error,
+       Error.invariant(
+         code: :invalid_cursor,
+         message:
+           "Backfill cursor is missing values for columns: #{Enum.map_join(missing_columns, ", ", & &1.name)}. " <>
+             "The table's primary key likely changed after the backfill was created. Start a new backfill."
+       )}
+    end
+  end
 
   @spec fetch_batch(
           db_or_conn :: Postgres.db_conn(),
